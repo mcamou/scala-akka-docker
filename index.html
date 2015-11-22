@@ -258,7 +258,7 @@
           <section>
             <h4>Sample Dockerfile</h4>
             <pre>
-              <code>
+              <code data-trim>
                 [INSERT SAMPLE DOCKERFILE] with:
                 FROM
                 WORKDIR
@@ -272,7 +272,7 @@
           <section>
             <h4>Building, pushing and running an image</h4>
             <pre>
-              <code>
+              <code data-trim>
                 [INSERT SAMPLE COMMAND SESSION]
                 docker build
                 docker push
@@ -312,7 +312,7 @@
           </section>
           <section>
             <h4>Networking</h4>
-            <div class="fragment">By default, Docker images listen on a virtual net interface</div>
+            <div class="fragment">Docker images listen on a virtual net interface</div>
             <ul>
               <li class="fragment">Can't talk to the outside world</li>
               <li class="fragment">Can't talk to other containers on same host</li>
@@ -324,13 +324,14 @@
                 <div><code>--link</code> to connect containers</div>
                 <div><code>--publish</code> to expose specific ports</div>
                 <div><code>--net=host</code> to expose all ports</div>
+                <div>Docker 1.9 adds <code>docker network</code> for added flexibility</div>
               </ul>
               <p/>
               <a href="https://docs.docker.com/v1.8/userguide/dockerlinks/">https://docs.docker.com/v1.8/userguide/dockerlinks/</a>
+              <a href="https://blog.docker.com/2015/11/docker-multi-host-networking-ga/">https://blog.docker.com/2015/11/docker-multi-host-networking-ga/</a>
             </div>
           </section>
         </section>
-        <!-- PELOS -->
         <section>
           <h2>Docker and Scala</h2>
           <p/>
@@ -341,7 +342,131 @@
             <li>Docker and Akka</li>
           </ul>
         </section>
-        <!-- PELOS -->
+        <section>
+          <h2>Dockerizing a Scala application</h2>
+          <section>
+            <h4>Selecting a base image</h4>
+            <ul class="fragment">
+              <li><code>java:openjdk-8</code></li>
+              <li>Official <code>java</code> image</li>
+              <li>Based on Ubuntu LTS and OpenJDK</li>
+              <li>JDK and JRE-based for Java 6, 7, 8 and 9</li>
+              <li><a href="https://hub.docker.com/_/java/">https://hub.docker.com/_/java/</a>
+            </ul>
+          </section>
+          <section>
+            <h4>Selecting a base image</h4>
+            There are other Java images using other Linux distributions (Alpine, CentOS). Some of them also include the Oracle JDK/JRE. Browse <a href="https://hub.docker.com/search/?q=java">https://hub.docker.com/search/?q=java</a>
+          </section>
+          <section>
+            <h4>Create a user, etc.</h4>
+            <pre>
+              <code data-trim>
+                RUN /usr/bin/apt-get update && \
+    /usr/bin/apt-get install -y locales git postgresql-client && \
+    /usr/bin/apt-get clean && \
+    /usr/sbin/locale-gen en_US en_US.UTF-8 && \
+    /usr/sbin/useradd -r -s /bin/false -d /home/appuser appuser
+              </code>
+            </pre>
+          </section>
+          <section>
+            <h4>Add your code</h4>
+            <ul>
+              <li>Use <code>ADD</code> to add any .class or .jar files</li>
+              <li>It's easiest to use <code>sbt-assembly</code> or <code>sbt-native-packager</code></li>
+            <pre>
+              <code data-trim>
+                COPY target/scala-2.11/myApp.jar /home/appuser/lib
+              </code>
+            </pre>
+          </section>
+          <section>
+            <h4>Managing configuration files</h4>
+            There are 3 options for adding your configuration files:
+            <ul>
+              <li>Different images per machine configuration</li>
+              <li>Single image, different configuration files</li>
+              <li>Single configuration file</li>
+            </ul>
+          </section>
+          <section>
+            <h4>Configuration: Different images</h4>
+            <ul>
+              <li>One Dockerfile per configuration</li>
+              <li>One image per configuration</li>
+            </ul>
+            <div>Advantage: Configuration is completely static</div>
+            <div>Disadvantages:</div>
+            <ul>
+              <li>Multiple builds (therefore: time, can get out of sync)</li>
+              <li>Multiple images in repository (although can use tags)</li>
+              <li>Not easily implementable using sbt-docker</li>
+            </ul>
+          </section>
+          <section>
+            <h4>Configuration: Single image, different config files</h4>
+            <ul>
+              <li>One single Dockerfile</li>
+              <li>Configurations stored in directories</li>
+              <li>Environment variable to select configuration at startup</li>
+            </ul>
+            <div>Advantage: Single build, single image</div>
+            <div>Disadvantage: Can be more complex to manage, files can get out of sync, need env vars</div>
+          </section>
+          <section>
+            <h4>Configuration: Single config files</h4>
+            <ul>
+              <li>One single Dockerfile</li>
+              <li>Single config file, use env vars to adapt at runtime</li>
+            </ul>
+            <div>Advantage: Single build, single image, single file</div>
+            <div>Disadvantage: Config file is more complex, not as easy to test, need env vars</div>
+          </section>
+          <section>
+            <h4>Creating and pushing the image</h4>
+            <div>[INSERT CODE: docker build, docker push]
+          </section>
+        </section>
+        <section>
+          <h2>Integrating Docker with sbt</h2>
+          <section>
+            <h4>sbt-docker</h4>
+            <!-- PELOS -->
+          </section>
+          <section>
+            <h4>Configuring the build</h4>
+          </section>
+          <section>
+            <h4>Creating and publishing the image</h4>
+          </section>
+          <section>
+            <h4>Caveats</h4>
+          </section>
+        </section>
+        <section>
+          <h2>Testing with Docker</h2>
+          <section>
+            <h4>Unit testing</h4>
+          </section>
+        </section>
+          <section>
+            <h4>Integration testing</h4>
+          </section>
+        <section>
+          <h2>Docker and Akka</h2>
+          <section>
+            <h4>Akka remoting</h4>
+          </section>
+          <section>
+            <h4>Akka clustering</h4>
+          </section>
+          <section>
+            <h4>Spray / Akka-HTTP</h4>
+          </section>
+          <section>
+            <h4>Akka testing</h4>
+          </section>
         </section>
       </div>
     </div>
