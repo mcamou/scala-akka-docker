@@ -432,16 +432,88 @@
           <h2>Integrating Docker with sbt</h2>
           <section>
             <h4>sbt-docker</h4>
-            <!-- PELOS -->
+            <div class="fragment">An sbt plugin that:</div>
+            <div/>
+            <ul>
+              <li class="fragment">Creates a Dockerfile</li>
+              <li class="fragment">Creates the Docker image</li>
+              <li class="fragment">Pushes the image to a registry</li>
+            </ul>
+            <div/>
+            <a class="fragment" href="https://github.com/marcuslonnberg/sbt-docker">https://github.com/marcuslonnberg/sbt-docker</a>
           </section>
           <section>
-            <h4>Configuring the build</h4>
+            <h4>Setting the image name</h4>
+            <pre>
+              <code>
+imageNames in docker := Seq(
+  ImageName(
+    namespace = Some("mcamou"),
+    repository = name.value,
+    tag = Some(s"v${version.value}")
+  ),
+  ImageName(
+    namespace = Some("mcamou"),
+    repository = name.value,
+    tag = Some("latest")
+  ),
+)
+              </code>
+            </pre>
+          </section>
+          <section>
+            <h4>Configuring the image</h4>
+            <pre>
+              <code>
+dockerfile in docker := {
+  val artifact = (outputPath in assembly).value
+  val baseDir = "/srv"
+  val preInstall = Seq(
+    "/usr/bin/apt-get update",
+    "/usr/bin/apt-get install -y locales git postgresql-client",
+    "/usr/bin/apt-get clean",
+    "/usr/sbin/locale-gen en_US en_US.UTF-8",
+    s"/usr/sbin/useradd -r -s /bin/false -d $baseDir appuser"
+  ).mkString(" && ")
+
+  new Dockerfile {
+    from("java:openjdk-8-jre")
+    runRaw(preInstall)
+    workDir(baseDir)
+    copy(new File("bin/run-docker.sh"), "bin/run.sh")
+    copy(new File("local/etc"), "etc")
+    runRaw("chmod 0544 bin/run.sh")
+    copy(artifact, "lib/app.jar")
+    user("appuser")
+    entryPoint("bin/run.sh")
+  }
+}
+              </code>
+            </pre>
+          </section>
+          <section>
+            <h4>Integrating with sbt-assembly</h4>
+            Ensure assembly always runs before docker:
+            <pre>
+              <code>
+                docker <<= (docker dependsOn assembly)
+              </code>
+            </pre>
           </section>
           <section>
             <h4>Creating and publishing the image</h4>
+            <pre>
+              <code data-trim>
+                [ INSERT CODE ]: sbt docker dockerPush
+              </code>
+            </pre>
           </section>
           <section>
-            <h4>Caveats</h4>
+            <h4>Caveats and recommendations</h4>
+            <ul>
+              <li class="fragment">Use sbt-assembly or sbt-native-packager to create a fat JAR</li>
+              <li class="fragment">In non-Linux platforms, start up docker-machine and set up the environment variables before starting up sbt</li>
+            </ul>
           </section>
         </section>
         <section>
