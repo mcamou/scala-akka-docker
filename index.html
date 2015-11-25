@@ -37,14 +37,15 @@
           <h2>Who am I?</h2>
           <ul>
             <li>I've been working with Scala for a few years now</li>
+            <li>Currently working at eBay</li>
             <li>Recently decided to move a project to Docker</li>
-            <li>Working at eBay(???) PELOS</li>
           </ul>
           <aside class="notes">
             <ul>
-              <li>I&#39;ve been working with Scala for a few years now</li>
-              <li>I&#39;ve found that many people are curious about Docker</li>
-              <li>I&#39;ve used it now in one project and found that, although simple, info is not easily organized</li>
+              <li>I've been working with Scala for a few years now</li>
+              <li>I've found that many people are curious about Docker</li>
+              <li>I've used it now in one project and found that, although simple, info is not easily organized</li>
+              <li>I'm more an enthusiastic user than an expert</li>
               <li>I hope this is useful</li>
             </ul>
           </aside>
@@ -304,6 +305,7 @@
               <li class="fragment">Use centralized logging</li>
               <li class="fragment">Use network data sources</li>
               <li class="fragment">Configuration files should be included at build time</li>
+              <li class="fragment">Dynamic configuration should be read from env variables</li>
             </ul>
             <p/>
             <div class="fragment">
@@ -373,7 +375,7 @@
           <section>
             <h4>Add your code</h4>
             <ul>
-              <li>Use <code>ADD</code> to add any .class or .jar files</li>
+              <li>Use <code>COPY</code> to add any .class or .jar files</li>
               <li>It's easiest to use <code>sbt-assembly</code> or <code>sbt-native-packager</code></li>
             <pre>
               <code data-trim>
@@ -441,6 +443,12 @@
             </ul>
             <div/>
             <a class="fragment" href="https://github.com/marcuslonnberg/sbt-docker">https://github.com/marcuslonnberg/sbt-docker</a>
+            <aside class="notes">
+              <ul>
+                <li>sbt-docker is the one I've used</li>
+                <li>Mention scala-native-packager's Docker support</li>
+              </ul>
+            </aside>
           </section>
           <section>
             <h4>Setting the image name</h4>
@@ -520,24 +528,34 @@ dockerfile in docker := {
           <h2>Testing with Docker</h2>
           <section>
             <h4>Unit testing</h4>
-          </section>
-        </section>
+            [INSERT CONTENT]: Running your tests within the container, why? how?
+           </section>
           <section>
             <h4>Integration testing</h4>
+            <div>[INSERT CONTENT]: Spinning up integration infrastructure via containers from sbt</div>
+            <div>REFERENCES: https://github.com/whisklabs/docker-it-scala, http://finelydistributed.io/integration-tests-with-docker/</div>
           </section>
+        </section>
         <section>
           <h2>Docker and Akka</h2>
           <section>
             <h4>Akka remoting</h4>
+            <div>[INSERT CONTENT]: Akka versions before 2.4 can't use port redirection (use --net=host)</div>
+            <div>REFERENCES: http://doc.akka.io/docs/akka/2.4.0/additional/faq.html#Why_are_replies_not_received_from_a_remote_actor_</div>
+            <div>akka.remote.netty.tcp.{bind-hostname, bind-port} vs {net,port}</div>
           </section>
           <section>
             <h4>Akka clustering</h4>
+            <div>[INSERT CONTENT]: Seed nodes (have a look at --link, or use Zookeeper)</div>
+            <div>REFERENCES: http://chrisloy.net/2014/05/11/akka-cluster-ec2-autoscaling.html, https://github.com/sclasen/akka-zk-cluster-seed</div>
           </section>
           <section>
             <h4>Spray / Akka-HTTP</h4>
+            <div>[INSERT CONTENT]: Bind host and port</div>
           </section>
           <section>
             <h4>Akka testing</h4>
+            <div>[INSERT CONTENT]: Testing Akka remoting and clustering</div>
           </section>
         </section>
       </div>
