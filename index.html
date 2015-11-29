@@ -52,30 +52,11 @@
         </section>
         <section>
           <h2>Agenda</h2>
-          <section>
-            <p/>
-          </section>
-          <section>
-            <b>Introduction to Docker</b>
-            <p/>
-            <ul>
-              <li>What is Docker?</li>
-              <li>Why Docker?</li>
-              <li>Docker basics</li>
-              <li>Caveats</li>
-            </ul>
-          </section>
-          <section>
-            <p>Introduction to Docker</p>
-            <b>Docker and Scala</b>
-            <p/>
-            <ul>
-              <li>Dockerizing a Scala application</li>
-              <li>Integrating Docker with sbt</li>
-              <li>Testing with Docker</li>
-              <li>Docker and Akka</li>
-            </ul>
-          </section>
+          <ul>
+            <li>Introduction to Docker</li>
+            <li>Docker and Scala</li>
+            <li>Docker and Akka</li>
+          </ul>
         </section>
         <section>
           <h2>Introduction to Docker</h2>
@@ -104,7 +85,7 @@
           </section>
           <section>
             <h4>The deployment process</h4>
-            <p>[INSERT DIAGRAM]: Artifacts -> infrastructure (multiple methods)</p>
+            <p>[INSERT DIAGRAM]: Artifacts -> infrastructure (multiple methods of deployment)</p>
           </section>
           <section>
             <h4>Deployment with Docker</h4>
@@ -170,17 +151,12 @@
             </ul>
           </section>
           <section>
-            <h4>Immutable infrastructure</h4>
+            <h4>Immutable, ephemeral infrastructure</h4>
             <ul>
               <li class="fragment">All changes are stored in source control</li>
               <li class="fragment">No hot-fixes that are not included in all hosts</li>
               <li class="fragment">No ad-hoc package updates</li>
-            </ul>
-          </section>
-          <section>
-            <h4>Ephemeral infrastructure</h4>
-            <ul>
-              <li class="fragment">Do not upgrade, redeploy!</li>
+              <li class="fragment">Do not update, destroy and recreate</li>
               <li class="fragment">Machines should be able to come and go</li>              
             </ul>
           </section>
@@ -199,9 +175,6 @@
               </code></pre>
               (or equivalent command)
             </div>
-          </section>
-          <section>
-            <h4>Installing Docker</h4>
             <div class="fragment">
               <p>On OS/X and Windows:</p>
               <p>Install <a href="https://www.docker.com/docker-toolbox">Docker Toolbox</a> which includes <em>docker-machine</em>.</p>
@@ -210,7 +183,7 @@
           </section>
           <section>
             <h4>Installing Docker</h4>
-            <div>Docker must be installed on all machines that will generate or install Docker images:</div>
+            <div>Docker must be installed on all machines that will generate or use Docker images:</div>
             <ul>
               <li>Developers</li>
               <li>CI</li>
@@ -219,31 +192,36 @@
           </section>
           <section>
             <h4>What is a Docker image?</h4>
-            <ul>
-              <li class="fragment">A self-contained filesystem built in layers
-                <ul class="fragment">
-                  <li>Basic OS commands and system files (/bin, /etc, /lib, /var, /usr, ...)
-                  <li>JVM</li>
-                  <li>Application artifacts</li>
-                  <li>Application config files</li>
-                </ul>
-              </li>
-              <li class="fragment">Built in layers using copy-on-write
-                <ul class="fragment">
-                  <li>Base image</li>
-                  <li>Application-specific files</li>
-                </ul>
-              </li>
-            </ul>
+            [INSERT IMAGE]: Diagram of a Docker image
+            <aside class="notes">
+              <ul>
+                <li>A self-contained filesystem built in layers
+                  <ul>
+                    <li>Basic OS commands and system files (/bin, /etc, /lib, /var, /usr, ...)
+                    <li>JVM</li>
+                    <li>Application artifacts</li>
+                    <li>Application config files</li>
+                  </ul>
+                </li>
+                <li>Built in layers using copy-on-write
+                  <ul>
+                    <li>Base image</li>
+                    <li>Application-specific files</li>
+                  </ul>
+                </li>
+              </ul>
+            </aside>
           </section>
           <section>
             <h4>How to build a Docker image</h4>
+            [INSERT IMAGE] Building a Docker image
+            <aside class="notes">
             <ol>
-              <li class="fragment">Create a Dockerfile</li>
+              <li>Create a Dockerfile</li>
               <ul>
-                <li class="fragment">Set the base image</li>
-                <li class="fragment">Add layers</li>
-                <ul class="fragment">
+                <li>Set the base image</li>
+                <li>Add layers</li>
+                <ul>
                   <li>Additional packages</li>
                   <li>Application artifacts</li>
                   <li>Set which command to run</li>
@@ -251,9 +229,10 @@
                   <li>...</li>
                 </ul>
               </ul>
-              <li class="fragment">Build the image</li>
-              <li class="fragment">Deploy to a registry</li>
+              <li>Build the image</li>
+              <li>Deploy to a registry</li>
             </ol>
+            </aside>
           </section>
           <section>
             <h4>Sample Dockerfile</h4>
@@ -281,16 +260,6 @@
                 docker stop
               </code>
             </pre>
-          </section>
-          <section>
-            <h4>Docker registries</h4>
-            <ul>
-              <li class="fragment">Similar to a GitHub repository</li>
-              <li class="fragment">Central place to store (versioned) images</li>
-              <li class="fragment">Public (usually free) and private (usually for-pay)</li>
-              <li class="fragment">Default is <a href="http://hub.docker.com">http://hub.docker.com</a></li>
-              <li class="fragment">Can install your own (<a href="https://github.com/docker/distribution">https://github.com/docker/distribution</a> and <a href="https://docs.docker.com/registry/">https://docs.docker.com/registry/</a>)</li>
-            </ul>
           </section>
         </section>
         <section>
@@ -321,10 +290,12 @@
             <p/>
             <div class="fragment">
               <div><strong>Solution</strong></div>
-              <div>There are options on the docker command line to expose ports and connect containers</div>
+              <div>Command-line to expose ports and connect containers</div>
               <div/>
-              <a href="https://docs.docker.com/v1.8/userguide/dockerlinks/">https://docs.docker.com/v1.8/userguide/dockerlinks/</a>
-              <a href="https://blog.docker.com/2015/11/docker-multi-host-networking-ga/">https://blog.docker.com/2015/11/docker-multi-host-networking-ga/</a>
+              <ul>
+                <li><a href="https://docs.docker.com/v1.8/userguide/dockerlinks/">Docker Links (&lt; 1.9)</a></li>
+                <li><a href="https://blog.docker.com/2015/11/docker-multi-host-networking-ga/">Multi host networking (1.9+)</a></li>
+              </ul>
               <aside class="notes">
                 <li>-link connects containers</li>
                 <li>-publish does port mapping</li>
@@ -353,12 +324,15 @@
               <li>Official <code>java</code> image</li>
               <li>Based on Ubuntu LTS and OpenJDK</li>
               <li>JDK and JRE-based for Java 6, 7, 8 and 9</li>
-              <li><a href="https://hub.docker.com/_/java/">https://hub.docker.com/_/java/</a>
             </ul>
+            <p/>
+            <a class="fragment" href="https://hub.docker.com/_/java/">https://hub.docker.com/_/java/</a>
           </section>
           <section>
             <h4>Selecting a base image</h4>
-            There are other Java images using other Linux distributions (Alpine, CentOS). Some of them also include the Oracle JDK/JRE. Browse <a href="https://hub.docker.com/search/?q=java">https://hub.docker.com/search/?q=java</a>
+            <div>There are other Java images using other Linux distributions (Alpine, CentOS). Some of them also include the Oracle JDK/JRE</div>
+            <p/>
+            <a href="https://hub.docker.com/search/?q=java">https://hub.docker.com/search/?q=java</a>
           </section>
           <section>
             <h4>Create a user, etc.</h4>
@@ -426,7 +400,7 @@
               <li class="fragment">Creates the Docker image</li>
               <li class="fragment">Pushes the image to a registry</li>
             </ul>
-            <div/>
+            <p/>
             <a class="fragment" href="https://github.com/marcuslonnberg/sbt-docker">https://github.com/marcuslonnberg/sbt-docker</a>
             <aside class="notes">
               <ul>
@@ -438,16 +412,16 @@
           <section>
             <h4>Setting the image name</h4>
             <pre>
-              <code>
+              <code data-trim>
 imageNames in docker := Seq(
   ImageName(
     namespace = Some("mcamou"),
-    repository = name.value,
+    repository = "MyApp", // or use name.value
     tag = Some(s"v${version.value}")
   ),
   ImageName(
     namespace = Some("mcamou"),
-    repository = name.value,
+    repository = "MyApp", // or use name.value
     tag = Some("latest")
   ),
 )
@@ -455,20 +429,26 @@ imageNames in docker := Seq(
             </pre>
           </section>
           <section>
+            <h4>Some useful vals</h4>
+            <pre>
+              <code data-trim>
+val artifact = (outputPath in assembly).value
+val baseDir = "/srv"
+val preInstall = Seq(
+  "/usr/bin/apt-get update",
+  "/usr/bin/apt-get install -y locales git postgresql-client",
+  "/usr/bin/apt-get clean",
+  "/usr/sbin/locale-gen en_US en_US.UTF-8",
+  s"/usr/sbin/useradd -r -s /bin/false -d $baseDir appuser"
+).mkString(" && ")
+              </code>
+            </pre>
+          </section>
+          <section>
             <h4>Configuring the image</h4>
             <pre>
-              <code>
+              <code data-trim>
 dockerfile in docker := {
-  val artifact = (outputPath in assembly).value
-  val baseDir = "/srv"
-  val preInstall = Seq(
-    "/usr/bin/apt-get update",
-    "/usr/bin/apt-get install -y locales git postgresql-client",
-    "/usr/bin/apt-get clean",
-    "/usr/sbin/locale-gen en_US en_US.UTF-8",
-    s"/usr/sbin/useradd -r -s /bin/false -d $baseDir appuser"
-  ).mkString(" && ")
-
   new Dockerfile {
     from("java:openjdk-8-jre")
     runRaw(preInstall)
@@ -504,8 +484,15 @@ dockerfile in docker := {
           <section>
             <h4>Caveats and recommendations</h4>
             <ul>
-              <li class="fragment">Use sbt-assembly or sbt-native-packager to create a fat JAR</li>
-              <li class="fragment">In non-Linux platforms, start up docker-machine and set up the environment variables before starting up sbt</li>
+              <li class="fragment">Use <code>sbt-assembly</code> or <code>sbt-native-packager</code> to create a fat JAR</li>
+              <li class="fragment">In non-Linux platforms, start up docker-machine and set up the environment variables before starting up sbt
+                <pre>
+                  <code data-trim>
+$ docker-machine start theMachine
+$ eval $(docker-machine env theMachine)
+                  </code>
+                </pre>
+              </li>
             </ul>
           </section>
         </section>
@@ -553,7 +540,7 @@ dockerfile in docker := {
           </section>
           <section>
             <h4>Integration testing with <code>docker-it-scala</code></h4>
-            <div>MongoDB example: Creating the container</div>
+            <div>Defining the container</div>
             <pre>
               <code data-trim>
 trait DockerMongodbService extends DockerKit {
@@ -561,7 +548,8 @@ trait DockerMongodbService extends DockerKit {
   val mongodbContainer = DockerContainer("mongo:2.6.5")
     .withPorts(DefaultMongodbPort -> None)
     .withReadyChecker(DockerReadyChecker.LogLine(
-    _.contains("waiting for connections on port")))
+       _.contains("waiting for connections on port")
+    ))
     .withCommand("mongod", "--nojournal", "--smallfiles", "--syncdelay", "0")
 
   abstract override def dockerContainers: List[DockerContainer] =
@@ -585,6 +573,14 @@ class MyMongoSpec extends FlatSpec
               </code>
             </pre>
           </section>
+        </section>
+        <section>
+          <h2>Docker and Akka</h2>
+          <ul>
+            <li>Why?</li>
+            <li>Caveats</li>
+            <li>Akka testing</li>
+          </ul>
         </section>
         <section>
           <h2>Docker and Akka</h2>
@@ -654,7 +650,7 @@ akka.remote.netty.tcp.port
         <section>
           <h4>References</h4>
           <div><a href="https://skillsmatter.com/skillscasts/5945-using-docker-scala-and-akka-for-integration-tests">Using Docker, Scala and Akka for Integration Tests</a> (Andreas Gies)</div>
-          
+          [INSERT MORE REFERENCES]
         </section>
       </div>
     </div>
