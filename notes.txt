@@ -38,12 +38,12 @@ DOCKER BASICS
             I would probably drop the docker registries slide, and just explain that you can push to a registry from the previous slide
 
 CAVEATS
-    I would remove the workaround text and merge networking onto one slide. In particular, just have one slide with key headlines you can talk over
+   [FIXED] I would remove the workaround text and merge networking onto one slide. In particular, just have one slide with key headlines you can talk over
 
 DOCKER AND SCALA
     I presume that on the docker commands you are going to do a bit of "why" explanation?
-        I would probably drop the bit about configuration files to focus on setting up the sbt project. You could just mention that there are other ways to do it, I have chosen xyz for the purpose of the presentation.
-            I think at some point it would be nice to have in this section a "benefits" piece. I know about docker, and sbt, but I want to know why I should use docker sbt in a quick sound bite. what benefits do i get from it?
+  [FIXED] I would probably drop the bit about configuration files to focus on setting up the sbt project. You could just mention that there are other ways to do it, I have chosen xyz for the purpose of the presentation.
+  [FIXED]  I think at some point it would be nice to have in this section a "benefits" piece. I know about docker, and sbt, but I want to know why I should use docker sbt in a quick sound bite. what benefits do i get from it?
 
 TESTING
     What plans do you have for this section? I would perhaps merge this into the AKKA section, and explain all in the context of AKKA.

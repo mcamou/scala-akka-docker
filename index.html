@@ -2,9 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>reveal.js – The HTML Presentation Framework</title>
-    <meta name="description" content="A framework for easily creating beautiful presentations using HTML">
-    <meta name="author" content="Hakim El Hattab">
+    <title>Scala, Akka and Docker, oh my!</title>
+    <meta name="description" content="Scala and Docker, living together"/>
+    <meta name="author" content="Mario Camou">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -114,7 +114,6 @@
             <h4>What is a Docker image?</h4>
             <ul>
               <li class="fragment">Consistent, standard way of packaging applications</li>
-              <li class="fragment">Similar to Unix chroot</li>
               <li class="fragment">Includes all dependencies, configuration files, etc.</li>
               <li class="fragment">Published to and installed from a registry</li>
               <li class="fragment">Snapshot of a container</li>
@@ -316,21 +315,22 @@
             <h4>Networking</h4>
             <div class="fragment">Docker images listen on a virtual net interface</div>
             <ul>
-              <li class="fragment">Can't talk to the outside world</li>
-              <li class="fragment">Can't talk to other containers on same host</li>
+              <li class="fragment">By default can't talk to the outside world</li>
+              <li class="fragment">By default can't talk to other containers on same host</li>
             </ul>
             <p/>
             <div class="fragment">
-              <div><strong>Solutions</strong></div>
-              <ul>
-                <div><code>--link</code> to connect containers</div>
-                <div><code>--publish</code> to expose specific ports</div>
-                <div><code>--net=host</code> to expose all ports</div>
-                <div>Docker 1.9 adds <code>docker network</code> for added flexibility</div>
-              </ul>
-              <p/>
+              <div><strong>Solution</strong></div>
+              <div>There are options on the docker command line to expose ports and connect containers</div>
+              <div/>
               <a href="https://docs.docker.com/v1.8/userguide/dockerlinks/">https://docs.docker.com/v1.8/userguide/dockerlinks/</a>
               <a href="https://blog.docker.com/2015/11/docker-multi-host-networking-ga/">https://blog.docker.com/2015/11/docker-multi-host-networking-ga/</a>
+              <aside class="notes">
+                <li>-link connects containers</li>
+                <li>-publish does port mapping</li>
+                <li>--net=host connects all external to internal ports</li>
+                <li>docker network (1.9+) manages the virtual network (also between containers)</li>
+              </aside>
             </div>
           </section>
         </section>
@@ -385,45 +385,22 @@
           </section>
           <section>
             <h4>Managing configuration files</h4>
-            There are 3 options for adding your configuration files:
             <ul>
-              <li>Different images per machine configuration</li>
-              <li>Single image, different configuration files</li>
-              <li>Single configuration file</li>
+              <li class="fragment">
+                Separate Dockerfiles/images per machine configuration
+              </li>
+              <li class="fragment">
+                Single image, different configuration files
+              </li>
+              <li class="fragment">
+                Single configuration file
+              </li>
             </ul>
-          </section>
-          <section>
-            <h4>Configuration: Different images</h4>
-            <ul>
-              <li>One Dockerfile per configuration</li>
-              <li>One image per configuration</li>
-            </ul>
-            <div>Advantage: Configuration is completely static</div>
-            <div>Disadvantages:</div>
-            <ul>
-              <li>Multiple builds (therefore: time, can get out of sync)</li>
-              <li>Multiple images in repository (although can use tags)</li>
-              <li>Not easily implementable using sbt-docker</li>
-            </ul>
-          </section>
-          <section>
-            <h4>Configuration: Single image, different config files</h4>
-            <ul>
-              <li>One single Dockerfile</li>
-              <li>Configurations stored in directories</li>
-              <li>Environment variable to select configuration at startup</li>
-            </ul>
-            <div>Advantage: Single build, single image</div>
-            <div>Disadvantage: Can be more complex to manage, files can get out of sync, need env vars</div>
-          </section>
-          <section>
-            <h4>Configuration: Single config files</h4>
-            <ul>
-              <li>One single Dockerfile</li>
-              <li>Single config file, use env vars to adapt at runtime</li>
-            </ul>
-            <div>Advantage: Single build, single image, single file</div>
-            <div>Disadvantage: Config file is more complex, not as easy to test, need env vars</div>
+            <aside class="notes">
+              1. +: static config / -: multiple builds, time, out of sync, repo, sbt-docker
+              2. +: single build/image / -: complexity, files out of sync, env vars
+              3. +: single build/image/file / -: config file complexity, testing, env vars
+            </aside>
           </section>
           <section>
             <h4>Creating and pushing the image</h4>
@@ -432,6 +409,14 @@
         </section>
         <section>
           <h2>Integrating Docker with sbt</h2>
+          <section>
+            <h4>Why?</h4>
+            <ul>
+              <li class="fragment">Because we can!</li>
+              <li class="fragment">Easier integration into build pipeline</li>
+              <li class="fragment">Running integration tests</li>
+            </ul>
+          </section>
           <section>
             <h4>sbt-docker</h4>
             <div class="fragment">An sbt plugin that:</div>
@@ -527,36 +512,149 @@ dockerfile in docker := {
         <section>
           <h2>Testing with Docker</h2>
           <section>
-            <h4>Unit testing</h4>
-            [INSERT CONTENT]: Running your tests within the container, why? how?
-           </section>
+            <h4>Integration testing</h4>
+            <ul>
+              <li class="fragment">
+                Testing interactions with external systems
+                <ul class="fragment ">
+                  <li>Database</li>
+                  <li>Message queue</li>
+                  <li>External web services</li>
+                  <li>...</li>
+                </ul>
+              </li>
+              <div class="fragment">Setup is often complicated, especially on dev boxes</div>
+            </ul>
+            <aside class="notes">
+              <ul>
+                <li>Unit testing should not depend on the environment</li>
+                <li>...therefore Docker is not as useful</li>
+            </aside>
+          </section>
           <section>
             <h4>Integration testing</h4>
-            <div>[INSERT CONTENT]: Spinning up integration infrastructure via containers from sbt</div>
-            <div>REFERENCES: https://github.com/whisklabs/docker-it-scala, http://finelydistributed.io/integration-tests-with-docker/</div>
+            <div class="fragment">Create Docker image(s) containing external resources</div>
+            <ul>
+              <li class="fragment">Start up the images before running integration tests</li>
+              <li class="fragment">Wait for them to start</li>
+              <li class="fragment">Run the tests</li>
+              <li class="fragment">Stop the containers after the tests</li>
+              <p/>
+              <div class="fragment">Can we automate all of this?</div>
+            </ul>
+            <p/>
+            <div class="fragment">Enter <code>docker-it-scala</code></div>
+            <aside class="notes">
+              <ul>
+                <li>Sets up the Docker containers</li>
+                <li>Waits until they are ready before any test is run</li>
+                <li>Shuts down the container when all tests finish</li>
+            </aside>
+          </section>
+          <section>
+            <h4>Integration testing with <code>docker-it-scala</code></h4>
+            <div>MongoDB example: Creating the container</div>
+            <pre>
+              <code data-trim>
+trait DockerMongodbService extends DockerKit {
+  val DefaultMongodbPort = 27017
+  val mongodbContainer = DockerContainer("mongo:2.6.5")
+    .withPorts(DefaultMongodbPort -> None)
+    .withReadyChecker(DockerReadyChecker.LogLine(
+    _.contains("waiting for connections on port")))
+    .withCommand("mongod", "--nojournal", "--smallfiles", "--syncdelay", "0")
+
+  abstract override def dockerContainers: List[DockerContainer] =
+    mongodbContainer :: super.dockerContainers
+}</code>
+                           </pre>
+            <aside class="notes">
+              These examples taken from the docker-it-scala homepage
+            </aside>
+          </section>
+          <section>
+            <h4>Integration testing with <code>docker-it-scala</code></h4>
+            <div>MongoDB example: Writing your tests</div>
+            <pre>
+              <code data-trim>
+class MyMongoSpec extends FlatSpec
+  with Matchers
+  with DockerMongodbService {
+  // Test assumes the MongoDB container is running
+}
+              </code>
+            </pre>
           </section>
         </section>
         <section>
           <h2>Docker and Akka</h2>
           <section>
-            <h4>Akka remoting</h4>
-            <div>[INSERT CONTENT]: Akka versions before 2.4 can't use port redirection (use --net=host)</div>
-            <div>REFERENCES: http://doc.akka.io/docs/akka/2.4.0/additional/faq.html#Why_are_replies_not_received_from_a_remote_actor_</div>
-            <div>akka.remote.netty.tcp.{bind-hostname, bind-port} vs {net,port}</div>
+            <h4 class="fragment">Why?</h4>
+            <ul>
+              <li class="fragment">
+                Docker is great for elasticity
+                <ul class="fragment">
+                  <li>Fast startup</li>
+                  <li>Immutable, ephemeral images</li>
+                  <li>Orchestration (Amazon ECS, Kubernetes, Docker Compose</li>
+                </ul>
+              </li>
+              <li class="fragment">Akka is too (especially with Clustering)</li>
+            </ul>
+            <p/>
+            <div class="fragment">A marriage made in heaven?</div>
           </section>
           <section>
-            <h4>Akka clustering</h4>
-            <div>[INSERT CONTENT]: Seed nodes (have a look at --link, or use Zookeeper)</div>
-            <div>REFERENCES: http://chrisloy.net/2014/05/11/akka-cluster-ec2-autoscaling.html, https://github.com/sclasen/akka-zk-cluster-seed</div>
+            <h4>Caveats: Remoting</h4>
+            <ul>
+              <li class="fragment">Akka &lt; 2.4 can't use NAT (forces use of <code>--net=host</code>)</li>
+              <li class="fragment">In 2.4, use:
+                <pre>
+                  <code data-trim>
+akka.remote.netty.tcp.bind-hostname // Internal
+akka.remote.netty.tcp.bind-port
+akka.remote.netty.tcp.hostname  // External
+akka.remote.netty.tcp.port
+                  </code>
+              </li>
+            </ul>
+            <a href="http://doc.akka.io/docs/akka/2.4.0/additional/faq.html#Why_are_replies_not_received_from_a_remote_actor_" class="fragment">http://doc.akka.io/docs/akka/2.4.0/additional/faq.html#Why_are_replies_not_received_from_a_remote_actor_</a>
           </section>
           <section>
-            <h4>Spray / Akka-HTTP</h4>
-            <div>[INSERT CONTENT]: Bind host and port</div>
+            <h4>Caveats: Clustering</h4>
+            <div class="fragment">Problem: Finding the seed nodes</div>
+            <ul>
+              <li class="fragment">In a single host, use <code>-link</code></li>
+              <li class="fragment">Use your cloud provider's SDK to find nodes in the cluster</li>
+              <li class="fragment">ZooKeeper with <code>akka-zk-cluster-seed</code></li>
+              <li class="fragment">Typesafe ConductR</li>
+            </ul>
+            <div class="fragment">
+              References:
+              <ul>
+                <li><a href="http://chrisloy.net/2014/05/11/akka-cluster-ec2-autoscaling.html">Akka Cluster EC2 Autoscaling</a></li>
+                <li><a href="https://github.com/sclasen/akka-zk-cluster-seed">akka-zk-cluster-seed</a></li>
+                <li><a href="http://blog.michaelhamrah.com/2014/03/running-an-akka-cluster-with-docker-containers/">Running an Akka cluster with Docker containers</a></li>
+              </ul>
           </section>
           <section>
             <h4>Akka testing</h4>
-            <div>[INSERT CONTENT]: Testing Akka remoting and clustering</div>
+            <div class="fragment">Usually for Integration Testing</div>
+            <ul>
+              <li class="fragment">Persistence setup</li>
+              <li class="fragment">Cluster setup</li>
+              <li class="fragment">Response when server is down</li>
+            </ul>
+            <div class="fragment">Use <code>reactive-docker</code> to control Docker at a lower level than <code>docker-it-scala</code></div>
           </section>
+        </section>
+        <section>
+          Any questions?
+        </section>
+        <section>
+          <h4>References</h4>
+          <div><a href="https://skillsmatter.com/skillscasts/5945-using-docker-scala-and-akka-for-integration-tests">Using Docker, Scala and Akka for Integration Tests</a> (Andreas Gies)</div>
+          
         </section>
       </div>
     </div>
