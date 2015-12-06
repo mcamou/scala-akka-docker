@@ -36,13 +36,13 @@
         <section>
           <h2>Who am I?</h2>
           <ul>
-            <li>I've been working with Scala for a few years now</li>
+            <li>Working with Scala for a few years</li>
             <li>Currently working at eBay</li>
-            <li>Recently decided to move a project to Docker</li>
+            <li>Recently moved a project to Docker</li>
           </ul>
           <aside class="notes">
             <ul>
-              <li>I've been working with Scala for a few years now</li>
+              <li>I've been working with Scala for a few years</li>
               <li>I've found that many people are curious about Docker</li>
               <li>I've used it now in one project and found that, although simple, info is not easily organized</li>
               <li>I'm more an enthusiastic user than an expert</li>
@@ -81,24 +81,30 @@
           </section>
           <section>
             <h4>The build process</h4>
-            <p>[INSERT DIAGRAM]: Source -> build system -> artifacts</p>
+            <img src="img/build.jpg"/>
           </section>
           <section>
             <h4>The deployment process</h4>
-            <p>[INSERT DIAGRAM]: Artifacts -> infrastructure (multiple methods of deployment)</p>
+            <img src="img/deploy-no-docker.jpg"/>
           </section>
           <section>
             <h4>Deployment with Docker</h4>
-            <p>[INSERT DIAGRAM]: Artifacts -> docker image -> Multiple infrastructures</p>
+            <img src="img/deploy-docker.jpg"/>
           </section>
           <section>
             <h4>What is a Docker image?</h4>
+            <div class="fragment">A way of packaging applications<p/></div>
             <ul>
-              <li class="fragment">Consistent, standard way of packaging applications</li>
-              <li class="fragment">Includes all dependencies, configuration files, etc.</li>
-              <li class="fragment">Published to and installed from a registry</li>
+              <li class="fragment">Consistent</li>
+              <li class="fragment">Self-contained</li>
+              <li class="fragment">Centrally stored</li>
               <li class="fragment">Snapshot of a container</li>
             </ul>
+            <aside class="notes">
+              <li>Standard and consistent</li>
+              <li>Self-contained = dependencies, config files, libraries, JVM, etc</li>
+              <li>Centrally stored = repositories</li>
+            </aside>
           </section>
           <section>
             <h4>What is a Docker container?</h4>
@@ -112,13 +118,17 @@
                   <li>Filesystem</li>
                 </ul>
               </li>
-              <li class="fragment">Can run on multiple runtimes: libcontainer, LXC, KVM, BSD Jails, Solaris Zones, etc</li>
-              <li class="fragment">Lighter (and faster to start) than a VM</li>
+              <li class="fragment">Multiple OS support: Linux, BSD, Solaris, etc</li>
+              <li class="fragment">Lighter than a VM</li>
             </ul>
           </section>
+          <aside class="notes">
+            <li>OS: libcontainer, LXC, KVM, Solaris Zones, ...
+            <li>Lighter = faster to start</li>
+          </aside>
           <section>
             <h4>Docker containers, images and VMs</h4>
-            <p>[INSERT DIAGRAM]: Image -> Container vs VM
+            <img src="img/01.docker-in-a-nutshell.PNG"/>
           </section>
         </section>
         <section>
@@ -145,18 +155,19 @@
           <section>
             <h4>Standardized infrastructure</h4>
             <ul>
+              <li class="fragment">Independent of underlying OS</li>
               <li class="fragment">Linux distributions and packages</li>
-              <li class="fragment">No more "it works on my machine"</li>
-              <li class="fragment">No more "it works on QA but not in production"</li>
+              <li class="fragment">"it works on my machine"</li>
+              <li class="fragment">"it works on QA but not in production"</li>
             </ul>
           </section>
           <section>
             <h4>Immutable, ephemeral infrastructure</h4>
             <ul>
-              <li class="fragment">All changes are stored in source control</li>
-              <li class="fragment">No hot-fixes that are not included in all hosts</li>
+              <li class="fragment">All changes are in source control</li>
+              <li class="fragment">No hot-fixes not included in all hosts</li>
               <li class="fragment">No ad-hoc package updates</li>
-              <li class="fragment">Do not update, destroy and recreate</li>
+              <li class="fragment">Do not update: destroy and recreate!</li>
               <li class="fragment">Machines should be able to come and go</li>              
             </ul>
           </section>
@@ -192,7 +203,7 @@
           </section>
           <section>
             <h4>What is a Docker image?</h4>
-            [INSERT IMAGE]: Diagram of a Docker image
+            <img src="img/02.layering-docker-images.PNG"/>
             <aside class="notes">
               <ul>
                 <li>A self-contained filesystem built in layers
@@ -213,11 +224,30 @@
             </aside>
           </section>
           <section>
-            <h4>How to build a Docker image</h4>
-            [INSERT IMAGE] Building a Docker image
-            <aside class="notes">
+            <h4>Building a Docker image</h4>
             <ol>
               <li>Create a Dockerfile</li>
+              <li>Build the image</li>
+              <li>Deploy to a registry</li>
+            </ol>
+          </section>
+          <section>
+            <h4>Sample Dockerfile</h4>
+            <pre>
+              <code data-trim>
+                [INSERT SAMPLE DOCKERFILE] with:
+                FROM
+                Workdir
+                COPY / ADD
+                RUN
+                USER
+                ENV
+                VOLUME
+                EXPOSE
+                ENTRYPOINT/CMD
+              </code>
+            </pre>
+            <aside class="notes">
               <ul>
                 <li>Set the base image</li>
                 <li>Add layers</li>
@@ -229,24 +259,7 @@
                   <li>...</li>
                 </ul>
               </ul>
-              <li>Build the image</li>
-              <li>Deploy to a registry</li>
-            </ol>
             </aside>
-          </section>
-          <section>
-            <h4>Sample Dockerfile</h4>
-            <pre>
-              <code data-trim>
-                [INSERT SAMPLE DOCKERFILE] with:
-                FROM
-                Workdir
-                COPY
-                RUN
-                USER
-                ENTRYPOINT/CMD
-              </code>
-            </pre>
           </section>
           <section>
             <h4>Building, pushing and running an image</h4>
@@ -272,20 +285,19 @@
             <ul>
               <li class="fragment">Use centralized logging</li>
               <li class="fragment">Use network data sources</li>
-              <li class="fragment">Configuration files should be included at build time</li>
-              <li class="fragment">Dynamic configuration should be read from env variables</li>
+              <li class="fragment">Include config files in build</li>
+              <li class="fragment">For dynamic config use env vars</li>
             </ul>
-            <p/>
-            <div class="fragment">
-              <strong>Workaround</strong> <em>(not recommended)</em>: Map a local directory to a filesystem in the container
-            </div>
+            <aside class="notes">
+              Workaround: <em>(not recommended)</em>: Map a local directory to a filesystem in the container
+            </aside>
           </section>
           <section>
             <h4>Networking</h4>
             <div class="fragment">Docker images listen on a virtual net interface</div>
             <ul>
-              <li class="fragment">By default can't talk to the outside world</li>
-              <li class="fragment">By default can't talk to other containers on same host</li>
+              <li class="fragment">Can't talk to the outside world</li>
+              <li class="fragment">Can't talk to other containers</li>
             </ul>
             <p/>
             <div class="fragment">
