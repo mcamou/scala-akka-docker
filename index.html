@@ -9,6 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
     <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/mario.css">
     <link rel="stylesheet" href="css/theme/black.css" id="theme">
     <!-- Code syntax highlighting -->
     <link rel="stylesheet" href="lib/css/zenburn.css">
@@ -80,16 +81,13 @@
             A way for developers to package any application to run on (almost) any infrastructure
           </section>
           <section>
-            <h4>The build process</h4>
-            <img src="img/build.jpg"/>
+            <img src="img/build.png"/>
           </section>
           <section>
-            <h4>The deployment process</h4>
-            <img src="img/deploy-no-docker.jpg"/>
+            <img class="stretch" src="img/deploy-no-docker.png"/>
           </section>
           <section>
-            <h4>Deployment with Docker</h4>
-            <img src="img/deploy-docker.jpg"/>
+            <img class="stretch" src="img/deploy-docker.png"/>
           </section>
           <section>
             <h4>What is a Docker image?</h4>
@@ -101,6 +99,7 @@
               <li class="fragment">Snapshot of a container</li>
             </ul>
             <aside class="notes">
+              <li>Runs a single command</li>
               <li>Standard and consistent</li>
               <li>Self-contained = dependencies, config files, libraries, JVM, etc</li>
               <li>Centrally stored = repositories</li>
@@ -121,14 +120,16 @@
               <li class="fragment">Multiple OS support: Linux, BSD, Solaris, etc</li>
               <li class="fragment">Lighter than a VM</li>
             </ul>
+            <aside class="notes">
+              <li>OS: libcontainer, LXC, KVM, Solaris Zones, ...
+              <li>Lighter = faster to start</li>
+            </aside>
           </section>
-          <aside class="notes">
-            <li>OS: libcontainer, LXC, KVM, Solaris Zones, ...
-            <li>Lighter = faster to start</li>
-          </aside>
           <section>
-            <h4>Docker containers, images and VMs</h4>
-            <img src="img/01.docker-in-a-nutshell.PNG"/>
+            <img class="stretch" src="img/vm.png"/>
+          </section>
+          <section>
+            <img class="stretch" src="img/container-vs-vm.png"/>
           </section>
         </section>
         <section>
@@ -162,7 +163,7 @@
             </ul>
           </section>
           <section>
-            <h4>Immutable, ephemeral infrastructure</h4>
+            <h4>Ephemeral, immutable infrastructure</h4>
             <ul>
               <li class="fragment">All changes are in source control</li>
               <li class="fragment">No hot-fixes not included in all hosts</li>
@@ -179,21 +180,6 @@
           </section>
           <section>
             <h4>Installing Docker</h4>
-            <div class="fragment">
-              On Linux:
-              <pre><code data-trim>
-                  # apt-get install docker
-              </code></pre>
-              (or equivalent command)
-            </div>
-            <div class="fragment">
-              <p>On OS/X and Windows:</p>
-              <p>Install <a href="https://www.docker.com/docker-toolbox">Docker Toolbox</a> which includes <em>docker-machine</em>.</p>
-              <li class="fragment">Will use a VirtualBox VM to host the Docker images</li>
-            </div>
-          </section>
-          <section>
-            <h4>Installing Docker</h4>
             <div>Docker must be installed on all machines that will generate or use Docker images:</div>
             <ul>
               <li>Developers</li>
@@ -202,8 +188,26 @@
             </ul>
           </section>
           <section>
-            <h4>What is a Docker image?</h4>
-            <img src="img/02.layering-docker-images.PNG"/>
+            <h4>Installing Docker</h4>
+            <div class="fragment">
+              On Linux:
+              <pre><code data-trim>
+                  # apt-get install docker
+              </code></pre>
+              (or equivalent command)
+            </div>
+            <div class="fragment">
+              <hr/>
+              <p>On OS/X and Windows:</p>
+              <p>Install <a href="https://www.docker.com/docker-toolbox">Docker Toolbox</a> which includes <em>docker-machine</em>.</p>
+              Will use a VirtualBox VM to host the Docker containers
+            </div>
+            <aside class="notes">
+              Mention that it's tied to Linux
+            </aside>
+          </section>
+          <section>
+            <img class="stretch" src="img/layers.png"/>
             <aside class="notes">
               <ul>
                 <li>A self-contained filesystem built in layers
@@ -225,26 +229,21 @@
           </section>
           <section>
             <h4>Building a Docker image</h4>
-            <ol>
-              <li>Create a Dockerfile</li>
-              <li>Build the image</li>
-              <li>Deploy to a registry</li>
-            </ol>
-          </section>
-          <section>
-            <h4>Sample Dockerfile</h4>
+            <b>Creating a Dockerfile</b>
             <pre>
               <code data-trim>
-                [INSERT SAMPLE DOCKERFILE] with:
-                FROM
-                Workdir
-                COPY / ADD
-                RUN
-                USER
-                ENV
-                VOLUME
-                EXPOSE
-                ENTRYPOINT/CMD
+FROM java:8
+RUN /usr/bin/apt-get update && \
+    /usr/bin/apt-get install -y locales git postgresql-client && \
+    /usr/bin/apt-get clean && \
+    /usr/sbin/locale-gen en_US en_US.UTF-8 && \
+    /usr/sbin/useradd -r -s /bin/false -d /srv appuser
+COPY target/scala-2.11/myApp.jar /srv/myApp.jar
+COPY bin/run-docker.sh /srv/run.sh
+COPY lib/etc /srv/etc
+RUN chown -R myUser /srv && chmod 0544 /srv/run.sh
+USER myUser
+ENTRYPOINT /srv/run.sh
               </code>
             </pre>
             <aside class="notes">
@@ -262,15 +261,51 @@
             </aside>
           </section>
           <section>
-            <h4>Building, pushing and running an image</h4>
+            <h4>Building an image</h4>
             <pre>
               <code data-trim>
-                [INSERT SAMPLE COMMAND SESSION]
-                docker build
-                docker push
-                docker pull
-                docker run
-                docker stop
+$ docker build .
+Sending build context to Docker daemon  78.2 MB
+Sending build context to Docker daemon
+Step 0 : FROM java:openjdk-8-jre
+---> 45a4bb374fcb
+Step 1 : RUN /usr/bin/apt-get update && /usr/bin/apt-get install -y locales git postgresql-client && /usr/bin/apt-get clean && /usr/sbin/locale-gen en_US en_US.UTF-8 && /usr/sbin/useradd -r -s /bin/false -d /srv appuser
+---> Using cache
+---> 01b419a0e4fe
+Step 2 : WORKDIR /srv/ridespark
+---> Using cache
+---> 0b4060deee6d
+Step 3 : COPY target/scala_2.11/myApp.jar /srv/myApp.jar
+---> Using cache
+---> 5a2fdbe7988f
+Step 4 : COPY bin/run-docker.sh bin/run.sh
+---> Using cache
+---> d298418084c5
+Step 5 : COPY lib/etc etc
+---> Using cache
+---> 667c3afe09c5
+Step 6 : RUN chown -R myUser /srv && chmod 0544 /srv/run.sh
+---> Using cache
+---> 239fa5c77ad0
+Step 7 : USER myUser
+---> Using cache
+---> 848a559a8550
+Step 8 : ENTRYPOINT /srv/run.sh
+---> Using cache
+---> 2a31f1128eee
+Successfully built 2a31f1128eee
+      
+              </code>
+            </pre>
+         </section>
+         <section>
+            <h4>Running an image</h4>
+            <pre>
+              <code data-trim>
+$ docker run 2a31f1128eee
+$ docker push myOrg/myApp
+$ docker pull myOrg/myApp
+$ docker run myOrg/myApp:latest
               </code>
             </pre>
           </section>
@@ -339,18 +374,36 @@
             </ul>
             <p/>
             <a class="fragment" href="https://hub.docker.com/_/java/">https://hub.docker.com/_/java/</a>
+            <aside class="notes">
+              Official Java 8 image is 481MB
+              anapsix/java is 174MB
+            </aside>
           </section>
           <section>
             <h4>Selecting a base image</h4>
-            <div>There are other Java images using other Linux distributions (Alpine, CentOS). Some of them also include the Oracle JDK/JRE</div>
-            <p/>
-            <a href="https://hub.docker.com/search/?q=java">https://hub.docker.com/search/?q=java</a>
+            <div class="fragment">
+              There are other Java images using other Linux distributions (Alpine, CentOS). Some of them also include the Oracle JDK/JRE
+              <p/>
+              <a href="https://hub.docker.com/search/?q=java">https://hub.docker.com/search/?q=java</a>
+            </div>
+            <div class="fragment">
+              ... or  <a href="https://github.com/gratiartis/dockerfiles/blob/master/oraclejdk8/Dockerfile">roll your own</a>
+            </div>
+          </section>
+          <section>
+            <h4>Selecting a base image</h4>
+            <pre>
+              <code data-trim>
+FROM java:8
+FROM anapsix/alpine-java
+              </code>
+            </pre>
           </section>
           <section>
             <h4>Create a user, etc.</h4>
             <pre>
               <code data-trim>
-                RUN /usr/bin/apt-get update && \
+RUN /usr/bin/apt-get update && \
     /usr/bin/apt-get install -y locales git postgresql-client && \
     /usr/bin/apt-get clean && \
     /usr/sbin/locale-gen en_US en_US.UTF-8 && \
@@ -365,7 +418,7 @@
               <li>It's easiest to use <code>sbt-assembly</code> or <code>sbt-native-packager</code></li>
             <pre>
               <code data-trim>
-                COPY target/scala-2.11/myApp.jar /home/appuser/lib
+COPY target/scala-2.11/myApp.jar /home/appuser/lib
               </code>
             </pre>
           </section>
@@ -389,8 +442,13 @@
             </aside>
           </section>
           <section>
-            <h4>Creating and pushing the image</h4>
-            <div>[INSERT CODE: docker build, docker push]
+            <h4>Creating and publishing the image</h4>
+            <pre>
+              <code data-trim>
+$ docker build
+$ docker push myOrg/myApp
+              </code>
+            </pre>
           </section>
         </section>
         <section>
@@ -428,12 +486,12 @@
 imageNames in docker := Seq(
   ImageName(
     namespace = Some("mcamou"),
-    repository = "MyApp", // or use name.value
+    repository = name.value,
     tag = Some(s"v${version.value}")
   ),
   ImageName(
     namespace = Some("mcamou"),
-    repository = "MyApp", // or use name.value
+    repository = name.value
     tag = Some("latest")
   ),
 )
@@ -489,7 +547,8 @@ dockerfile in docker := {
             <h4>Creating and publishing the image</h4>
             <pre>
               <code data-trim>
-                [ INSERT CODE ]: sbt docker dockerPush
+$ docker build
+$ docker push myOrg/myApp
               </code>
             </pre>
           </section>
@@ -626,14 +685,14 @@ akka.remote.netty.tcp.port
                   </code>
               </li>
             </ul>
-            <a href="http://doc.akka.io/docs/akka/2.4.0/additional/faq.html#Why_are_replies_not_received_from_a_remote_actor_" class="fragment">http://doc.akka.io/docs/akka/2.4.0/additional/faq.html#Why_are_replies_not_received_from_a_remote_actor_</a>
+            <a href="http://doc.akka.io/docs/akka/2.4.0/additional/faq.html#Why_are_replies_not_received_from_a_remote_actor_" class="fragment">Why are replies not received from a remote actor?</a>
           </section>
           <section>
             <h4>Caveats: Clustering</h4>
             <div class="fragment">Problem: Finding the seed nodes</div>
             <ul>
-              <li class="fragment">In a single host, use <code>-link</code></li>
-              <li class="fragment">Use your cloud provider's SDK to find nodes in the cluster</li>
+              <li class="fragment">Use <code>-link</code> or <code>docker network</code></li>
+              <li class="fragment">Roll your own (cloud provider's SDK, Consul, etcd, ...)
               <li class="fragment">ZooKeeper with <code>akka-zk-cluster-seed</code></li>
               <li class="fragment">Typesafe ConductR</li>
             </ul>
@@ -654,15 +713,21 @@ akka.remote.netty.tcp.port
               <li class="fragment">Response when server is down</li>
             </ul>
             <div class="fragment">Use <code>reactive-docker</code> to control Docker at a lower level than <code>docker-it-scala</code></div>
+            <div class="fragment">More info: <a href="https://skillsmatter.com/skillscasts/5945-using-docker-scala-and-akka-for-integration-tests">Using Docker, Scala and Akka for Integration Tests</a></div>
           </section>
         </section>
         <section>
-          Any questions?
+          <h4>Summary</h4>
+          <div>Docker:</div>
+          <ul>
+            <li class="fragment">Simplifies application deployment</li>
+            <li class="fragment">Can be integrated with sbt</li>
+            <li class="fragment">Can be useful for integration testing</li>
+            <li class="fragment">Combined with Akka can increase elasticity</li>
+          </ul>
         </section>
         <section>
-          <h4>References</h4>
-          <div><a href="https://skillsmatter.com/skillscasts/5945-using-docker-scala-and-akka-for-integration-tests">Using Docker, Scala and Akka for Integration Tests</a> (Andreas Gies)</div>
-          [INSERT MORE REFERENCES]
+          Any questions?
         </section>
       </div>
     </div>
