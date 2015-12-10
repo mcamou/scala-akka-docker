@@ -436,16 +436,19 @@ COPY target/scala-2.11/myApp.jar /home/appuser/lib
           <section>
             <h4>Managing configuration files</h4>
             <ul>
-              <li>
-                Separate Dockerfiles/images per machine configuration
-              </li>
-              <li>
-                Single image, different configuration files
-              </li>
-              <li>
-                Single configuration file
-              </li>
+              <li>Separate Dockerfiles/images per config</li>
+              <li>Single image, different config files</li>
+              <li>Single config file</li>
             </ul>
+            <pre class="fragment">
+              <code data-trim>
+COPY bin/run-docker.sh /srv/run.sh
+COPY etc /srv/etc
+RUN chown -R myUser /srv && chmod 0544 /srv/run.sh
+USER myUser
+ENTRYPOINT /srv/run.sh
+              </code>
+            </pre>
             <aside class="notes">
               1. +: static config / -: multiple builds, time, out of sync, repo, sbt-docker
               2. +: single build/image / -: complexity, files out of sync, env vars
