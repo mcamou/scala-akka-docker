@@ -93,8 +93,8 @@
             <h4>What is a Docker image?</h4>
             <div>A way of packaging applications<p/></div>
             <ul>
-              <li>Consistent</li>
               <li>Self-contained</li>
+              <li>Isolated</li>
               <li>Centrally stored</li>
               <li>Snapshot of a container</li>
             </ul>
@@ -117,7 +117,7 @@
                   <li>Filesystem</li>
                 </ul>
               </li>
-              <li>Multiple OS support: Linux, BSD, Solaris, etc</li>
+              <li>OS-agnostic<super>*</super></li>
               <li>Lighter than a VM</li>
             </ul>
             <aside class="notes">
@@ -139,21 +139,21 @@
           </section>
           <section>
             <h4>Dependency and environment management</h4>
-            <ul>
-              <li class="fragment">An image contains all dependencies
-                <ul>
-                  <li>JVM</li>
-                  <li>Libraries (including native)</li>
-                  <li>Scripts</li>
-                  <li>Configuration files</li>
-                </ul>
-              </li>
-              <li class="fragment">...and is created from a text description
-                <ul>
-                  <li>Infrastructure as code</li>
-                  <li>Environment controlled in VCS</li>
-                </ul>
-              </li>
+            <div class="fragment">An image contains all dependencies
+              <ul>
+                <li>JVM</li>
+                <li>Libraries (including native)</li>
+                <li>Scripts</li>
+                <li>Configuration files</li>
+              </ul>
+            </div>
+            <p/>
+            <div class="fragment">...and is created from a text description
+              <ul>
+                <li>Infrastructure as code</li>
+                <li>Controlled in VCS</li>
+              </ul>
+            </div>
           </section>
           <section>
             <h4>Standardized infrastructure</h4>
@@ -243,7 +243,7 @@
             <b>Creating a Dockerfile</b>
             <pre>
               <code data-trim>
-FROM java:8
+FROM java:openjdk-8-jre
 RUN /usr/bin/apt-get update && \
     /usr/bin/apt-get install -y locales git postgresql-client && \
     /usr/bin/apt-get clean && \
@@ -283,7 +283,7 @@ Step 0 : FROM java:openjdk-8-jre
 Step 1 : RUN /usr/bin/apt-get update && /usr/bin/apt-get install -y locales git postgresql-client && /usr/bin/apt-get clean && /usr/sbin/locale-gen en_US en_US.UTF-8 && /usr/sbin/useradd -r -s /bin/false -d /srv appuser
 ---> Using cache
 ---> 01b419a0e4fe
-Step 2 : WORKDIR /srv/ridespark
+Step 2 : WORKDIR /srv
 ---> Using cache
 ---> 0b4060deee6d
 Step 3 : COPY target/scala_2.11/myApp.jar /srv/myApp.jar
@@ -468,8 +468,10 @@ $ docker push myOrg/myApp
             <h4>Why?</h4>
             <ul>
               <li>Because we can!</li>
-              <li>Easier integration into build pipeline</li>
-              <li>Running integration tests</li>
+              <div class="fragment">
+                <li>Easier integration into build pipeline</li>
+                <li>Running integration tests</li>
+              </div>
             </ul>
           </section>
           <section>
@@ -520,7 +522,7 @@ val preInstall = Seq(
   "/usr/bin/apt-get install -y locales git postgresql-client",
   "/usr/bin/apt-get clean",
   "/usr/sbin/locale-gen en_US en_US.UTF-8",
-  s"/usr/sbin/useradd -r -s /bin/false -d $baseDir appuser"
+  s"/usr/sbin/useradd -r -s /bin/false -d $baseDir myUser"
 ).mkString(" && ")
               </code>
             </pre>
@@ -533,12 +535,11 @@ dockerfile in docker := {
   new Dockerfile {
     from("java:openjdk-8-jre")
     runRaw(preInstall)
-    workDir(baseDir)
-    copy(new File("bin/run-docker.sh"), "bin/run.sh")
-    copy(new File("local/etc"), "etc")
-    runRaw("chmod 0544 bin/run.sh")
-    copy(artifact, "lib/app.jar")
-    user("appuser")
+    copy(artifact, "/srv/app.jar")
+    copy(new File("bin/run-docker.sh"), s"$baseDir/run.sh")
+    copy(new File("local/etc"), "$baseDir/etc")
+    runRaw("chown -R myUser $baseDir && chmod 0544 $baseDir/run.sh")
+    user("myUser")
     entryPoint("bin/run.sh")
   }
 }
@@ -566,8 +567,8 @@ sbt> dockerPush
           <section>
             <h4>Caveats and recommendations</h4>
             <ul>
-              <li>Use <code>sbt-assembly</code> or <code>sbt-native-packager</code> to create a fat JAR</li>
-              <li>In non-Linux platforms, start up docker-machine and set up the environment variables before starting up sbt
+              <li>Create a fat JAR: <code>sbt-assembly</code> or <code>sbt-native-packager</code>R</li>
+              <li>In non-Linux platforms, start up <code>docker-machine</code> and set up the environment variables before starting up sbt
                 <pre>
                   <code data-trim>
 $ docker-machine start theMachine
@@ -605,14 +606,16 @@ $ eval $(docker-machine env theMachine)
           <section>
             <h4>Integration testing</h4>
             <div>Create Docker image(s) containing external resources</div>
-            <ul class="fragment">
-              <li>Start up the containers</li>
-              <li>Wait for them to start</li>
-              <li>Run the tests</li>
-              <li>Stop the containers</li>
-              <p/>
+            <div class="fragment">
+              <ul>
+                <li>Start up the containers</li>
+                <li>Wait for them to start</li>
+                <li>Run the tests</li>
+                <li>Stop the containers</li>
+                <p/>
+              </ul>
               <div>Can we automate all of this?</div>
-            </ul>
+            </div>
             <p/>
             <div class="fragment">Enter <code>docker-it-scala</code></div>
             <aside class="notes">
@@ -663,7 +666,7 @@ class MyMongoSpec extends FlatSpec
           <ul>
             <li>Why?</li>
             <li>Caveats</li>
-            <li>Akka testing</li>
+            <li>Akka&nbsp;testing</li>
           </ul>
         </section>
         <section>
@@ -676,7 +679,7 @@ class MyMongoSpec extends FlatSpec
                 <ul>
                   <li>Fast startup</li>
                   <li>Immutable, ephemeral images</li>
-                  <li>Orchestration (Amazon ECS, Kubernetes, Docker Compose)</li>
+                  <li>Orchestration (Amazon ECS, Kubernetes, Docker Swarm)</li>
                 </ul>
               </li>
               <p/>
@@ -711,6 +714,7 @@ akka.remote.netty.tcp.port
             <div>Problem: Finding the seed nodes</div>
             <ul>
               <li><code>docker -link</code> or <code>docker network</code></li>
+              <li>Docker Compose</li>
               <li>Roll your own (cloud provider's SDK, Consul, etcd, ...)
               <li>ZooKeeper (<code>akka-zk-cluster-seed</code>)</li>
               <li>Typesafe ConductR</li>
@@ -748,10 +752,9 @@ implicit def timeout: Duration = Duration(20, SECONDS)
 val containerName = "reactive-docker"
 val cmd = Seq("/bin/sh", "-c", "while true; do echo hello world; sleep 1; done")
 val cfg = ContainerConfig("busybox", cmd)
-val containerId = Await.result(docker.containerCreate("myOrg/myApp", cfg, Some(containerName)), timeout)._1
+val (containerId, _) = Await.result(docker.containerCreate("myOrg/myApp", cfg, Some(containerName)), timeout)
 val started = await(docker.containerStart(containerId))
-// Container should now be started
-val stooped = await(docker.containerStop(containerId))
+val stopped = await(docker.containerStop(containerId))
               </code>
             </pre>
           </section>
@@ -774,7 +777,7 @@ val stooped = await(docker.containerStop(containerId))
 	<section>
 	<div>Thank you!</div>
 	<p/>
-	<a href="http://www.tecnoguru.com/scala-akka-docker">http://www.tecnoguru.com/scala-akka-docker</a>
+	<a href="http://tecnoguru.com/scala-akka-docker">http://tecnoguru.com/scala-akka-docker</a>
 	</section>
         <section>
           Any questions?
