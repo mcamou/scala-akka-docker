@@ -38,7 +38,7 @@
           <h2>Who am I?</h2>
           <ul>
             <li>Working with Scala for a few years</li>
-            <li>Currently working at eBay</li>
+            <li>Currently working at eBay EPD</li>
             <li>Recently moved a project to Docker</li>
           </ul>
           <aside class="notes">
@@ -108,7 +108,7 @@
           <section>
             <h4>What is a Docker container?</h4>
             <ul>
-              <li>An instance of a running image</li>
+              <li>A running instance of an image</li>
               <li>
                 Isolated set of resources
                 <ul>
@@ -119,6 +119,7 @@
               </li>
               <li>OS-agnostic<super>*</super></li>
               <li>Lighter than a VM</li>
+              <li>Usually runs a single process</li>
             </ul>
             <aside class="notes">
               <li>OS: libcontainer, LXC, KVM, Solaris Zones, ...
@@ -344,6 +345,7 @@ $ docker run myOrg/myApp:latest
             <ul>
               <li>Can't listen to the outside world</li>
               <li>Can't talk to other containers</li>
+              <li>Docker itself adds network overhead</li>
             </ul>
             <p/>
             <div class="fragment">
@@ -353,11 +355,14 @@ $ docker run myOrg/myApp:latest
               <ul>
                 <li><a href="https://docs.docker.com/v1.8/userguide/dockerlinks/">Docker Links (&lt; 1.9)</a></li>
                 <li><a href="https://blog.docker.com/2015/11/docker-multi-host-networking-ga/">Multi host networking (1.9+)</a></li>
+                <li>--net=host</li>
               </ul>
               <aside class="notes">
                 <li>-link connects containers</li>
                 <li>-publish does port mapping</li>
                 <li>--net=host connects all external to internal ports</li>
+                <li>Not using net=host can reduce raw network throughput (double the latency, ~30% available worst case, adds CPU overhead)</li>
+                <li><a href="https://www.percona.com/blog/2016/02/05/measuring-docker-cpu-network-overhead/">Article on net performance</a></li>
                 <li>docker network (1.9+) manages the virtual network (also between containers)</li>
               </aside>
             </div>
@@ -398,7 +403,7 @@ $ docker run myOrg/myApp:latest
               <a href="https://hub.docker.com/search/?q=java">https://hub.docker.com/search/?q=java</a>
             </div>
             <div>
-              ... or  <a href="https://github.com/gratiartis/dockerfiles/blob/master/oraclejdk8/Dockerfile">roll your own</a>
+              ... or roll your own using <a href="http://heiber.im/post/creating-a-solid-docker-base-image/">Alpine</a> or <a href="https://github.com/gratiartis/dockerfiles/blob/master/oraclejdk8/Dockerfile" style="font-size=20%">Ubuntu</a>
             </div>
           </section>
           <section>
@@ -426,7 +431,7 @@ RUN /usr/bin/apt-get update && \
             <h4>Add your code</h4>
             <ul>
               <li>Use <code>COPY</code> to add any .class or .jar files</li>
-              <li>It's easiest to use <code>sbt-assembly</code> or <code>sbt-native-packager</code></li>
+              <li>It's easiest to create a Fat JAR with <code>sbt-assembly</code> or <code>sbt-native-packager</code></li>
             <pre>
               <code data-trim>
 COPY target/scala-2.11/myApp.jar /home/appuser/lib
@@ -469,12 +474,16 @@ $ docker push myOrg/myApp
           <h2>Integrating Docker with sbt</h2>
           <section>
             <h4>Why?</h4>
-            <ul>
+            <ul class="fragment">
               <li>Because we can!</li>
-              <div class="fragment">
-                <li>Easier integration into build pipeline</li>
-                <li>Running integration tests</li>
-              </div>
+              <img src="img/integrate-all-the-things.jpg"/>
+            </ul>
+          </section>
+          <section>
+            <h4>Why?</h4>
+            <ul>
+              <li>Easier integration into build pipeline</li>
+              <li>Running integration tests</li>
             </ul>
           </section>
           <section>
@@ -538,7 +547,7 @@ dockerfile in docker := {
   new Dockerfile {
     from("java:openjdk-8-jre")
     runRaw(preInstall)
-    copy(artifact, "/srv/app.jar")
+    copy(artifact, s"$baseDir/app.jar")
     copy(new File("bin/run-docker.sh"), s"$baseDir/run.sh")
     copy(new File("local/etc"), "$baseDir/etc")
     runRaw("chown -R myUser $baseDir && chmod 0544 $baseDir/run.sh")
@@ -553,7 +562,7 @@ dockerfile in docker := {
             <h4>Integrating with sbt-assembly</h4>
             Ensure assembly always runs before docker:
             <pre>
-              <code>
+              <code data-trim>
                 docker <<= (docker dependsOn assembly)
               </code>
             </pre>
@@ -570,7 +579,7 @@ sbt> dockerPush
           <section>
             <h4>Caveats and recommendations</h4>
             <ul>
-              <li>Create a fat JAR: <code>sbt-assembly</code> or <code>sbt-native-packager</code>R</li>
+              <li>Create a fat JAR: <code>sbt-assembly</code> or <code>sbt-native-packager</code></li>
               <li>In non-Linux platforms, start up <code>docker-machine</code> and set up the environment variables before starting up sbt
                 <pre>
                   <code data-trim>
@@ -617,7 +626,7 @@ $ eval $(docker-machine env theMachine)
                 <li>Stop the containers</li>
                 <p/>
               </ul>
-              <div>Can we automate all of this?</div>
+              <div class="fragment">Can we automate all of this?</div>
             </div>
             <p/>
             <div class="fragment">Enter <code>docker-it-scala</code></div>
@@ -729,7 +738,7 @@ akka.remote.netty.tcp.port
             <div>References:</div>
             <p/>
             <ul>
-              <li>Heiko Seeberger's talk yesterday</li>
+              <li><a href="https://skillsmatter.com/skillscasts/6824-akka-cluster-on-coreos">Akka Cluster on CoreOS</a> presentation by Heiko Seeberger</li>
               <li><a href="http://chrisloy.net/2014/05/11/akka-cluster-ec2-autoscaling.html">Akka Cluster EC2 Autoscaling</a></li>
               <li><a href="https://github.com/sclasen/akka-zk-cluster-seed">akka-zk-cluster-seed</a></li>
               <li><a href="http://blog.michaelhamrah.com/2014/03/running-an-akka-cluster-with-docker-containers/">Running an Akka cluster with Docker containers</a></li>
@@ -763,7 +772,7 @@ val stopped = await(docker.containerStop(containerId))
           </section>
           <section>
             <p/>
-            <div>More info: <a href="https://skillsmatter.com/skillscasts/5945-using-docker-scala-and-akka-for-integration-tests">Using Docker, Scala and Akka for Integration Tests</a></div>
+            <div>More info: <a href="https://skillsmatter.com/skillscasts/5945-using-docker-scala-and-akka-for-integration-tests">Using Docker, Scala and Akka for Integration Tests</a> presentation by Andreas Gies</div>
           </section>
         </section>
         <section>
@@ -773,8 +782,8 @@ val stopped = await(docker.containerStop(containerId))
           <ul>
             <li>Simplifies application deployment</li>
             <li>Can be integrated with sbt</li>
-            <li>Can be useful for integration testing</li>
             <li>Combined with Akka can increase elasticity</li>
+            <li>Can be useful for integration testing</li>
           </ul>
         </section>
 	<section>
